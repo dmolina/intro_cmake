@@ -7,9 +7,9 @@ There are two versions: In spanish and in english.
 
 The english version is:
 
-http://htmlpreview.github.io/?https://github.com/dmolina/intro_cmake/blob/master/cmake_en.html
+[![Slides](capture_english.png)](http://htmlpreview.github.io/?https://github.com/dmolina/intro_cmake/blob/master/cmake_en.html)
 
 And the Spanish version: 
-http://htmlpreview.github.io/?https://github.com/dmolina/intro_cmake/blob/master/cmake_es.html
+[![CMake Intro](capture_spanish.png)](http://htmlpreview.github.io/?https://github.com/dmolina/intro_cmake/blob/master/cmake_es.html)
 
 
