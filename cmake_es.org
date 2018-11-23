@@ -1,0 +1,393 @@
+#+TITLE: CMake: Compilando en C/C++ fácilmente
+#+REVEAL_ROOT: http://cdn.jsdelivr.net/reveal.js/3.0.0/
+# +REVEAL_THEME: white
+#+REVEAL_EXTRA_CSS: style_simple.css
+#+AUTHOR: Daniel Molina Cabrera
+#+DATE: dmolina@decsai.ugr.es
+#+OPTIONS: toc:nil ^:nil num:nil
+
+* Necesidad de CMake
+
+** El uso de Makefile es deseable
+
+- Compilar sólo los ficheros cambiados es deseable. 
+  + Compilación puede ser muy larga.
+
+- Es necesario formato independiente del IDE. 
+
+  + Cada uno use el IDE que prefiera.
+
+- Facilitar la instalación.
+
+** Los makefiles presentan muchos problemas
+
+- Compilar un simple programa supone muchas líneas.
+
+- No es intuitivo. 
+
+- Es difícil que sea multiplataforma.
+
+** ¿Que hacéis los alumnos?
+
+#+ATTR_REVEAL: :frag (roll-in)
+- Dejarlos para el final 😟.
+
+- No poner dependencias, o un /bash/ 😧.
+
+- No usarlo, compilar /a mano/ 😨. 
+
+** Los makefiles pueden generalizarse
+
+#+BEGIN_SRC make
+CC=g++
+CFLAGS=-Wall
+EXEC = main
+DEPS = polinomio.h
+SOURCES = $(shell ls *.cpp)
+OBJS = $(SOURCES:%.cpp=%.o)
+
+$(EXEC): $(OBJS)
+	$(CC) $(CFLAGS) -o $(EXEC) $(OBJS)
+
+%.o: %.cpp $(DEPS)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+.PHONY: clean
+
+clean:
+	rm *.o $(EXEC)
+
+#+END_SRC
+
+** Procedimiento /usual/
+
+1. Buscar makefile de otro proyecto. 
+
+2. Adaptar las variables. 
+
+#+ATTR_REVEAL: :frag (roll-in)
+No es trivial, no resuelve:
+
+#+ATTR_REVEAL: :frag (roll-in)
+- Adaptar distintos entornos. 
+- Dependencias complejas.
+
+** ¿Y las librerías?
+
+- No se puede comprobar fácilmente si están. 
+
+- Crear librerías es aún más complejo. 
+
+- Complicado crear tanto librerías como programas.
+
+* Alternativa: CMake
+
+** Qué es CMake
+
+- Un programa que genera Makefiles por nosotros. 
+
+- Diseñado para ser *portable*.
+
+- Mucho más fácil de usar. 
+
+
+** Ventajas
+
+- Más portable.
+
+- Mucho más sencillo en casos no complejos. 
+
+- Muy buen soporte de librerías.
+
+** Desventajas de CMake
+
+- *Dependencia*: Requiere para compilar:
+  + Make.
+  + Compilador. 
+  + CMake.
+
+- Sintaxis algo compleja para opciones más complejas. 
+
+- Nuevas versiones menos intuitivas.
+
+* Usando CMake
+
+** Proceso
+
+#+ATTR_REVEAL: :frag (roll-in)
+1. Crear fichero *CMakeLists.txt*
+2. /cmake ./
+3. /make/
+
+#+ATTR_REVEAL: :frag (roll-in)
+Tras editar sólo hay que volver a ejecutar make. 
+
+** Ventajas del make creado
+
+- Porcentaje de compilación.
+
+#+BEGIN_EXPORT html
+<pre><font color="#8AE234"><b>daniel@ubuntu</b></font>:<font color="#729FCF"><b>~/current/borra/librealea/realea</b></font>$ make
+<font color="#AD7FA8"><b>Scanning dependencies of target realea</b></font>
+[  1%] <font color="#4E9A06">Building CXX object common/CMakeFiles/realea.dir/signal.o</font>
+[  2%] <font color="#4E9A06">Building CXX object common/CMakeFiles/realea.dir/running.o</font>
+[  3%] <font color="#4E9A06">Building CXX object common/CMakeFiles/realea.dir/random.o</font>
+[  3%] <font color="#4E9A06">Building CXX object common/CMakeFiles/realea.dir/srandom.o</font>
+[  4%] <font color="#4E9A06">Building CXX object common/CMakeFiles/realea.dir/orandom.o</font>
+[  5%] <font color="#4E9A06">Building CXX object common/CMakeFiles/realea.dir/domain.o</font>
+[  6%] <font color="#4E9A06">Building CXX object common/CMakeFiles/realea.dir/config.o</font>
+[  7%] <font color="#4E9A06">Building CXX object common/CMakeFiles/realea.dir/debug.o</font>
+[  8%] <font color="#4E9A06">Building CXX object common/CMakeFiles/realea.dir/ConfigFile.o</font>
+[  9%] <font color="#4E9A06">Building CXX object common/CMakeFiles/realea.dir/problem.o</font>
+In file included from <b>/mnt/home/daniel/current/borra/librealea/realea/common/problem.cc:20:0</b>:
+<b>/mnt/home/daniel/current/borra/librealea/realea/common/problem.h:190:9:</b> <font color="#AD7FA8"><b>warning: </b></font>&apos;<b>template&lt;class&gt; class std::auto_ptr</b>&apos; is deprecated [<font color="#AD7FA8"><b>-Wdeprecated-declarations</b></font>]
+ typedef <font color="#AD7FA8"><b>auto_ptr</b></font>&lt;Problem&gt; ProblemPtr;
+         <font color="#AD7FA8"><b>^~~~~~~~</b></font>
+In file included from <b>/mnt/home/daniel/Descargas/tools/anaconda3/x86_64-conda_cos6-linux-gnu/include/c++/7.2.0/memory:80:0</b>,
+                 from <b>/mnt/home/daniel/current/borra/librealea/realea/common/problem.h:31</b>,
+                 from <b>/mnt/home/daniel/current/borra/librealea/realea/common/problem.cc:20</b>:
+<b>/mnt/home/daniel/Descargas/tools/anaconda3/x86_64-conda_cos6-linux-gnu/include/c++/7.2.0/bits/unique_ptr.h:51:28:</b> <font color="#34E2E2"><b>note: </b></font>declared here
+   template&lt;typename&gt; class <font color="#34E2E2"><b>auto_ptr</b></font>;
+                            <font color="#34E2E2"><b>^~~~~~~~</b></font>
+[ 10%] <font color="#4E9A06">Building CXX object common/CMakeFiles/realea.dir/problemtablefactory.o</font>
+</pre>
+#+END_EXPORT
+
+#+REVEAL: split
+
+- múltiples opciones: 
+
+  - /make help/ : muestra opciones.
+  - /make clean/: borra todos los ficheros compilados. 
+  - /make install/ (librerías, requiere configuración).
+
+** Depuración o Release
+
+- *Modo Release*: Optimizado (por defecto).
+
+#+BEGIN_SRC sh
+cmake -DCMAKE_BUILD_TYPE=Release .
+#+END_SRC
+
+- *Modo debug*: Depurar. 
+
+#+BEGIN_SRC sh
+cmake -DCMAKE_BUILD_TYPE=Debug .
+#+END_SRC
+
+#+attr_reveal: frag (roll-in)
+*Sin cambiar* CMakeLists.txt. 
+
+** Trucos útiles
+
+- Se puede mostrar las opciones del compilador.
+
+#+BEGIN_SRC sh
+make VERBOSE=1 
+#+END_SRC
+
+- Cambiar el compilador
+
+#+BEGIN_SRC sh
+export CC=clang; export CXX=clang++; cmake .
+#+END_SRC
+
+* Creando nuestro proyecto CMake
+
+** Crear fichero CMakeLists.txt
+
+Se divide en:
+
+- Definir proyecto (y lenguaje). 
+- Definir Variables.
+- Definir dónde localizar las cosas (.h, libs). 
+- Definir ejecutable. 
+- Definir librerías. 
+- Buscar librerías.
+- Para cada ejecutable definir sus dependencias. 
+
+Todas las opciones son opcionales.
+
+** Hello world
+
+#+BEGIN_SRC sh
+PROJECT(hello)
+ADD_EXECUTABLE(hello hello.cc)
+TARGET_LINK_LIBRARIES(hello)
+#+END_SRC
+
+No es tán difícil.
+
+** Compilando ejecutable
+
+La sintaxis es sencilla:
+
+#+BEGIN_SRC sh
+ADD_EXECUTABLE(<nombre_ejecutable> <fichero1> <fichero2> ...)
+#+END_SRC
+
+Desde un único fichero:
+
+#+BEGIN_SRC sh
+ADD_EXECUTABLE(ejemplo examplemain.cc)
+#+END_SRC
+
+o varios 
+
+#+BEGIN_SRC sh
+ADD_EXECUTABLE(programa main.cc board.cc game.cc)
+#+END_SRC
+
+Los ficheros .h no se incluye, los detecta sólo.
+
+** Variables
+
+Como es pesado definir ficheros, se suelen usar variables.
+
+#+BEGIN_SRC sh
+SET(SRC file1.cpp file2.cpp ...)
+ADD_EXECUTABLE(exec main.cpp ${SRC})
+ADD_EXECUTABLE(test maintest.cpp ${SRC})
+#+END_SRC
+
+** Estándar de C++
+
+Quiero definir la versión del C++ a compilar, ¿cómo lo hago?
+
+#+attr_reveal: frag (roll-in)
+#+BEGIN_SRC sh
+set(CMAKE_CXX_STANDARD 11)
+#+END_SRC
+
+Se puede poner 11, 14 ó 17.
+
+** Versiones de CMake
+
+- Hay opciones, como las anteriores, que son más modernas. 
+
+- Se puede indicar una versión mínima de CMake. 
+
+#+BEGIN_SRC sh
+cmake_minimum_required(VERSION 3.2)
+#+END_SRC
+
+** Dependencias con librerías
+
+Si tuviésemos que enlazar con la librería "libpng.so", 
+el único cambio es:
+
+#+BEGIN_SRC sh
+TARGET_LINK_LIBRARIES(hello png)
+#+END_SRC
+
+*TARGET_LINK_LIBRARIES* lista las librerías con las que compilar.
+
+** Encontrando ficheros .h
+
+- Busca en directorios por defecto. 
+
+- Se puede indicar otro directorios añadiendo *INCLUDE_DIRECTORIES*:
+
+#+BEGIN_SRC sh
+INCLUDE_DIRECTORIES(..)
+#+END_SRC
+
+(El directorio actual ya está incluído)
+
+** Encontrando librerías
+
+- Busca en directorios por defecto. 
+
+- Se puede indicar otro directorios añadiendo *LINK_DIRECTORIES*:
+
+#+BEGIN_SRC sh
+LINK_DIRECTORIES(realea/lib ea/lib localsearch)
+#+END_SRC
+
+** Creando librería
+
+Es *igual* que un ejecutable. 
+
+#+BEGIN_SRC sh
+ADD_LIBRARY(<libname> SHARED <fichero1> <fichero2>..)
+#+END_SRC
+
+- Se usa *SHARED* para librería dinámica, *STATIC* para estáticas. 
+
+- Añadirá "lib" al nombre de la librería.
+
+- Se pueden usar variables.
+
+#+BEGIN_SRC sh
+ADD_LIBRARY(ea SHARED ${SRC})
+#+END_SRC
+
+Creará la librería /libea.so/ con esas dependencias. 
+
+** Creación conjunta de librería y ejecutable
+
+- Es muy fácil de hacer:
+
+#+BEGIN_SRC sh
+ADD_LIBRARY(ea SHARED ${SRC})
+ADD_EXECUTABLE(test main.cc)
+TARGET_LINK_LIBRARIES(test sfml-windows sfml-graphics ea)
+#+END_SRC
+
+#+attr_reveal: frag (roll-in)
+Nunca fue más fácil. 
+
+#+attr_reveal: frag (roll-in)
+Esto en Make es muy complejo:
+
+* Algunos ejemplos
+
+** Ejemplo real pero corto
+
+#+BEGIN_SRC sh
+cmake_minimum_required(VERSION 3.2)
+set(CMAKE_CXX_STANDARD 11)
+PROJECT(snake)
+SET(SRC snake board utils)
+ADD_EXECUTABLE(snake snake.cpp ${SRC})
+TARGET_LINK_LIBRARIES(snake csfml-window csfml-graphics csfml-system stdc++)
+#+END_SRC
+
+** Añadiendo make doc (uso doxygen)
+
+#+BEGIN_SRC sh
+INCLUDE(FindDoxygen)
+
+IF(DOXYGEN_EXECUTABLE)
+MESSAGE( STATUS "Setting Doxygen Generator" )
+ADD_CUSTOM_TARGET(
+doc
+COMMAND ${DOXYGEN_EXECUTABLE} 
+VERBATIM)
+ENDIF(DOXYGEN_EXECUTABLE)
+#+END_SRC
+
+
+** Creando librería y ejecutable
+
+#+BEGIN_SRC sh
+SET (SRC
+hybrid2ph
+hybrid
+malschains
+selectlsimp
+get_util
+)
+
+INCLUDE_DIRECTORIES(..)
+LINK_DIRECTORIES(../lib)
+SET (EA malschains)
+ADD_LIBRARY(${EA} SHARED ${SRC})
+ADD_EXECUTABLE(${EA}_example main_${EA}_example)
+TARGET_LINK_LIBRARIES(${EA}_example realea ${EA} ${GlobalEA} realls realpeasy newmat)
+#+END_SRC
+
+* En conclusión
+
+** 
+[[file:life.png]]
